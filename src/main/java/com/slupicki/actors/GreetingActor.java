@@ -29,6 +29,10 @@ public class GreetingActor extends AbstractActor {
 
         private String name;
 
+        public Greet(String name) {
+            this.name = name;
+        }
+
         public String getName() {
             return name;
         }
