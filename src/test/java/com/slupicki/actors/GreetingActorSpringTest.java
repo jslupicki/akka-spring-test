@@ -1,6 +1,7 @@
 package com.slupicki.actors;
 
 import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -10,13 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import scala.Option;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.FiniteDuration;
+import scala.util.Try;
 
 import java.util.concurrent.TimeUnit;
 
-import static com.slupicki.SpringExtension.SPRING_EXTENSION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
@@ -30,8 +32,21 @@ class GreetingActorSpringTest {
 
     @BeforeEach
     void setUp() {
-        greeter = actorSystem.actorOf(SPRING_EXTENSION_PROVIDER.get(actorSystem)
-                .props("greetingActor"), "greeter_for_test");
+
+        ActorSelection actorSelection = actorSystem.actorSelection("user/greeter");
+        Future<ActorRef> actorRefFuture = actorSelection.resolveOne(FiniteDuration.create(1, TimeUnit.SECONDS));
+        Option<Try<ActorRef>> value = actorRefFuture.value();
+        Try<ActorRef> actorRefTry = value.get();
+        greeter = actorRefTry.get();
+
+/* TODO: investigate why this don't work
+        greeter = actorSystem
+                .actorSelection("user/greeter")
+                .resolveOne(FiniteDuration.create(2, TimeUnit.SECONDS))
+                .value()
+                .get()
+                .get();
+*/
     }
 
     @Test
