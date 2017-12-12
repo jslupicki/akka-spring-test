@@ -5,7 +5,6 @@ import akka.actor.ActorSelection;
 import akka.actor.ActorSystem;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
-import org.awaitility.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.slupicki.SpringExtension.SPRING_EXTENSION_PROVIDER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -34,10 +32,11 @@ class GreetingActorSpringTest {
     private ActorSelection greeter;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         greeter = actorSystem.actorSelection("user/" + ACTOR_NAME);
-        Future<ActorRef> future = greeter.resolveOne(FiniteDuration.create(1, TimeUnit.SECONDS));
-        await().atMost(Duration.ONE_SECOND).until(future::isCompleted);
+        FiniteDuration timeout = FiniteDuration.create(1, TimeUnit.SECONDS);
+        Future<ActorRef> future = greeter.resolveOne(timeout);
+        Await.ready(future, timeout);
         if (future.value().get().isFailure()) {
             actorSystem.actorOf(SPRING_EXTENSION_PROVIDER.get(actorSystem).props("greetingActor"), ACTOR_NAME);
             greeter = actorSystem.actorSelection("user/" + ACTOR_NAME);
