@@ -22,14 +22,14 @@ import static com.slupicki.SpringExtension.SPRING_EXTENSION_PROVIDER;
 @Component
 public class AppStartupRunner implements ApplicationRunner {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppStartupRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(AppStartupRunner.class);
 
     @Autowired
     private ActorSystem actorSystem;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        logger.info("Your application started with option names : {}", args.getOptionNames());
+        log.info("Your application started with option names : {}", args.getOptionNames());
         ActorRef greeter = actorSystem.actorOf(SPRING_EXTENSION_PROVIDER.get(actorSystem)
                 .props("greetingActor"), "greeter");
 
@@ -40,6 +40,6 @@ public class AppStartupRunner implements ApplicationRunner {
 
         String greet = (String) Await.result(result, duration);
 
-        logger.info("Actor {} answer with {}", greeter.toString(), greet);
+        log.info("Actor {} answer with {}", greeter.toString(), greet);
     }
 }
